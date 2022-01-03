@@ -6,6 +6,7 @@ import sys, os, requests, json, shutil, platform
 DEFAULT_PATH = "C:\\Users\\terry\\Pictures\\wallpapers\\"
 OS_TYPE = platform.system()
 
+
 def print_usage():
     print('''
     
@@ -46,6 +47,7 @@ def create_folder(folder, override):
             os.mkdir(DEFAULT_PATH + folder)
             print(f"Folder {DEFAULT_PATH + folder} created.")
 
+
 def wallhaven(query, folder, config, pages, override):
     global DEFAULT_PATH
 
@@ -72,6 +74,7 @@ def wallhaven(query, folder, config, pages, override):
             print(f"{filename} done.")
 
     print(f"Download finished. Total of {str(count_img)} files were downloaded.")
+
 
 def chan_dl(parse_json, path, board):
     filecount = 0
