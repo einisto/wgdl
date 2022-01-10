@@ -156,17 +156,16 @@ def main(folder, method, param, config, pages, override):
         folder = folder + "/"
 
     create_folder(folder, override)
-
-    match method:
-        case 0:
-            # 4chan basic
-            chan_basic(param, folder, override)
-        case 1:
-            # 4chan hoard
-            chan_hoard(param, folder, override)
-        case 2:
-            # wallhaven
-            wallhaven(param, folder, config, pages, override)
+    
+    if method == 0:
+        # 4chan basic
+        chan_basic(param, folder, override)
+    elif method == 1:
+        # 4chan hoard
+        chan_hoard(param, folder, override)
+    elif method == 2:
+        # wallhaven
+        wallhaven(param, folder, config, pages, override)
 
 
 if __name__ == "__main__":
