@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from getopt import GetoptError, getopt
 from json.decoder import JSONDecodeError
 import sys, os, requests, json, shutil, platform
