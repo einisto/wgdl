@@ -19,6 +19,7 @@ def print_usage():
     4chan:
         -t Enter 4chan thread url (simple)
         -b Enter 4chan board url (hoard, ignores sticky)
+        -l Enable logging, allows downloading the same thread again without getting duplicates
 
     Wallhaven:
         -q Define wallhaven search query (use quotes with spaces)
@@ -46,6 +47,25 @@ def create_folder(folder, override):
         else:
             os.mkdir(DEFAULT_PATH + folder)
             print(f"Folder {DEFAULT_PATH + folder} created.")
+
+
+def create_log(thread_id, ids):
+    global DEFAULT_PATH
+    with open(DEFAULT_PATH + thread_id + ".log", "w") as f:
+        for id in ids:
+            f.write(id + "\n")
+
+
+def read_log(thread_id):
+    global DEFAULT_PATH
+    try:
+        with open(DEFAULT_PATH + thread_id + ".log", "r") as f:
+            log = set(f.read().splitlines())
+    except IOError:
+        print("Current thread does not have previous logs.")
+        return set()
+
+    return log
 
 
 def wallhaven(query, folder, config, pages, override):
@@ -76,11 +96,20 @@ def wallhaven(query, folder, config, pages, override):
     print(f"Download finished. Total of {str(count_img)} files were downloaded.")
 
 
-def chan_dl(parse_json, path, board):
+def chan_dl(parse_json, path, board, thread_id, logging):
+    if logging:
+        logs = read_log(thread_id)
+
     filecount = 0
     for p in parse_json["posts"]:
         try:
             img, ext = str(p["tim"]), p["ext"]
+            if logging:
+                if img in logs:
+                    print(f"{img}{ext} skipped (found in logs).")
+                    continue
+                else:
+                    logs.add(img)
         except KeyError:
             continue
         
@@ -92,10 +121,13 @@ def chan_dl(parse_json, path, board):
         filecount += 1
         print(f"{filename} done.")
 
+    if logging:
+        create_log(thread_id, logs)
+
     return filecount
 
 
-def chan_basic(url, folder, override):
+def chan_basic(url, folder, override, logging):
     global DEFAULT_PATH
 
     board, id = url.split("/")[-3], url.split("/")[-1]
@@ -103,14 +135,14 @@ def chan_basic(url, folder, override):
     json_dump = requests.get(json_url).text
     parse_json = json.loads(json_dump)
     if override:
-        filecount = chan_dl(parse_json, folder, board)
+        filecount = chan_dl(parse_json, folder, board, id, logging)
     else:
-        filecount = chan_dl(parse_json, DEFAULT_PATH + folder, board)
+        filecount = chan_dl(parse_json, DEFAULT_PATH + folder, board, id, logging)
 
     print(f"Download finished. Total of {str(filecount)} files were downloaded.")
 
 
-def chan_hoard(url, folder, override):
+def chan_hoard(url, folder, override, logging):
     global DEFAULT_PATH
 
     if "catalog" in url:
@@ -140,16 +172,16 @@ def chan_hoard(url, folder, override):
                     continue
                 print(f"Downloading from thread {board}/{str(id)}.")
                 if override:
-                    filecount = chan_dl(parse_json, folder, board)
+                    filecount = chan_dl(parse_json, folder, board, id, logging)
                 else:
-                    filecount = chan_dl(parse_json, DEFAULT_PATH + folder, board)
+                    filecount = chan_dl(parse_json, DEFAULT_PATH + folder, board, id, logging)
 
             filecount_total += filecount
         
     print(f"Download finished. Total of {str(filecount_total)} files were downloaded.")
 
 
-def main(folder, method, param, config, pages, override):
+def main(folder, method, param, config, pages, override, logging):
     if OS_TYPE == "Windows":
         folder = folder + "\\"
     elif OS_TYPE == "Linux" or OS_TYPE == "Darwin":
@@ -159,10 +191,10 @@ def main(folder, method, param, config, pages, override):
     
     if method == 0:
         # 4chan basic
-        chan_basic(param, folder, override)
+        chan_basic(param, folder, override, logging)
     elif method == 1:
         # 4chan hoard
-        chan_hoard(param, folder, override)
+        chan_hoard(param, folder, override, logging)
     elif method == 2:
         # wallhaven
         wallhaven(param, folder, config, pages, override)
@@ -180,9 +212,10 @@ if __name__ == "__main__":
     config = {}
     pages = 1
     override = False
+    logging = False
 
     try:
-        opts, args = getopt(sys.argv[1:], "ho:t:b:q:r:s:p:x:",
+        opts, args = getopt(sys.argv[1:], "hlo:t:b:q:r:s:p:x:",
                             ["output=", "thread=", "board=",
                              "query=", "res=", "sorting=",
                              "pages=", "override="])
@@ -196,6 +229,8 @@ if __name__ == "__main__":
             sys.exit()
         elif opt in ("-o", "--output"):
             output = arg
+        elif opt in ("-l", "--logging"):
+            logging = True
         elif opt in ("-x", "--override"):
             override = True
             output = arg
@@ -219,4 +254,4 @@ if __name__ == "__main__":
         print("Missing at least one of the required parameters. Please try again.")
         sys.exit(2)
 
-    main(output, method, param, config, pages, override)
+    main(output, method, param, config, pages, override, logging)
