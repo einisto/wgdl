@@ -71,7 +71,6 @@ def read_log(thread_id):
 def wallhaven(query, folder, config, pages, override):
     global DEFAULT_PATH
 
-    query = query.replace(" ", "%20")
     config["q"] = query
 
     count_img = 0
