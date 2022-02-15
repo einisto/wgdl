@@ -3,7 +3,7 @@ from getopt import GetoptError, getopt
 from json.decoder import JSONDecodeError
 import sys, os, requests, json, shutil, platform
 
-DEFAULT_PATH = "C:\\Users\\terry\\Pictures\\wallpapers\\"
+DEFAULT_PATH = "/path/to/your/dir/"
 OS_TYPE = platform.system()
 
 
