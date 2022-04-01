@@ -146,16 +146,18 @@ def get_image(url, filename):
 
 
 def wallhaven_dl(query, folder, config, pages, override):
+    path = folder if override else DEFAULT_PATH + folder
     config["q"] = query
 
     filecount = 0
     for pn in range(1, pages+1):
         config["page"] = pn
+        print(f"Requesting page {pn}...")
         json_dump = make_json_request("https://wallhaven.cc/api/v1/search", config)
         parse_json = json.loads(json_dump)
         for d in parse_json["data"]:
             url = d["path"]
-            get_image(url, folder, override)
+            get_image(url, path + url.split("/")[-1])
             filecount += 1
 
     print(f"Download finished. Total of {filecount} files were downloaded.")
