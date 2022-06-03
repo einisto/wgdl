@@ -1,5 +1,7 @@
 ## Imagescraper for 4chan and wallhaven
 
+### [Way faster asynchronous successor written in Rust 🦀](https://github.com/einisto/rusty-downloader)
+
 ### Usage
 * Change DEFAULT_PATH to match the folder you want to use as default output
 * Single thread: insert a thread URL (e.g. https://boards.4channel.org/g/thread/85738921)
